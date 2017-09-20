@@ -2,114 +2,65 @@ const Node = require('./node');
 
 class LinkedList {
     constructor() {
-        //assign 0 to this.length
-        this._head = null;
-        this._tail = null;
+        //assign 0 to this.length        
         this.length = 0;
     }
     append(data) {
         //should assign any nodes to this._head and this._tail if list is empty
         //should add new data to the end of list    
         var node = new Node(data);
-        var tail = this._tail;
-        if (this.isEmpty()) {
+        if (!this._head){
             this._head = node;
-            this._tail = node;
-        } else {            
-            tail.next = node;
-            node.prev = tail;
-            this._tail = node;
-        }        
-    if (this.length === 0) {
-        // first node, so all pointers to this
-        this._head = node;
+        }else{
+            this._tail.next = node;
+            node.prev = this._tail;
+        }
+
         this._tail = node;
-    } else {
-        // put on the tail
-        this._tail.next = node;
-        node.prev = this._tail;
-        this._tail = node;
-    }
-    // update count
         this.length += 1;
-        return node;
+
+        return this;
     }
     head() {
         //should return data from the this.head
-        return this._head;
+        return this._head.data;
     }
     tail() {
         //should return data from the this.tail
-        return this._tail;
+        return this._tail.data;
     }
     at(position) {
         //should return Node.data by index
-        var node = new Node(data);
-        var i;
-        if (position > -1 && position < this.length) {
-            node = this._head;
-            i = 0;
-            while (i < position) {
-                node = node.next;
-                i++;
-            }
-            return node;
-        }
-        return null;
-    }
-    insertAt(position, data) {
-        //should insert data by index
-        function insert(data) {
-            var newNode = new Node(data);
-            if (this.isEmpty()) {
-                this._head = this._tail = newNode;
-            } else {
-                this._tail.next = newNode;
-                newNode.prev = this._tail;
-                this._tail = newNode;
-            }
-            this.length += 1;
-            return true;
-        }
-        function insertFirst(data) {
-            if (this.isEmpty()) {
-                this.insert(data);
-            } else {
-                var newNode = new Node(data);
-                newNode.next = this.head;
-                this._head.prev = newNode;
-                this._head = newNode;
-                this.length += 1;
-            }
-            return true;
+        var i = 0;
+        var current = this._head;
+        while (i < this.length) {
+            if(i == position){ return current.data;}
+            else{current = current.next;
+                i++;}
         }        
-        var newNode = new Node(data);
-        var current = this._head;        
-        var previous = null;
-        var index = 0;
-
-        // check
-        if (position < 0 || position > this.length - 1) {
-            return false;
-        }
-        // if position is 0, we just need to insert the first node
-        if (position === 0) {
-            this.insertFirst(data);
-            return true;
-        }
-        while (index < position) {
-            previous = current;
-            current = current.next;
-            index += 1;
-        }
-        current.prev.next = newNode;
-        newNode.prev = current.prev;
-        current.prev = newNode;
-        newNode.next = current;
-        this.length += 1;
-        return true;
     }
-
+    insertAt(index, data) {
+        //should insert data by index
+         var node = new Node(data);
+        if (index == 0) {
+            node.next = this._head;
+            this._head.prev = node;
+            this._head = node;
+        } else if (index < this.length && index > 0) {
+            var count = 0;
+            var insert = this._head;
+            while (count < index) { insert = insert.next; count++; }
+            this._head = insert;
+            this._tail = insert.next;
+            node.prev = insert;
+            insert.next = node;
+            node.next = insert.next.next;
+            insert.next.next = node;
+            insert = node;
+        } else { 
+            return this; 
+        }
+    }
     isEmpty() {
         //should return true if list is empty
         if (this.length === 0) {
@@ -121,66 +72,71 @@ class LinkedList {
 
     clear() {
         //should clear the list        
-            if (this.isEmpty()) {
-                return null;
-            } 
-        var list = this;
-        while (!this.isEmpty()) {           
-           if (this.prev !== null) {
-                this.prev.next = this.next;
-            }
-            if (this.next !== null) {
-                this.next.prev = this.prev;
-            }
-            if (list._head === this) {
-                list._head = this.next;
-            }
-            if (list._tail === this) {
-                list._tail = this.prev;
-            }
-            list._length--; 
-        }
+        var node = new Node();
+        this._head = node;
+        this._tail = node;
+        this.length = 0;
+        return this;
     }
-    deleteAt(position) {
+    deleteAt(index) {
         //should delete element by index
-        var node = this.at(position);
-        var isHead = this.head();
-        var isTail = this.tail();
-
-        if (node !== null) {
-            if (isHead) {
-                this._head = node.next;
-            }
-            if (isTail) {
-                this._tail = node.prev;
-            }
-            if (node.next !== null) {
-                node.next.prev = node.prev;
-            }
-            if (node.prev !== null) {
-                node.prev.next = node.next;
-            }
-            this.length--;
-            return node.data;
+        if (index > this.length - 1 || index < 0){
+            return null;
         }
-
-        return null;
+        var node = this._head;
+        var i = 0;
+        if(index == 0){
+            this._head = node.next;
+            if(this._head = null){
+                this._tail = null;
+            }
+            else{
+                this._head.prev = null;
+            }
+        } else if (index ==this.length -1) {
+            node = this._tail;
+            this._tail = node.prev;
+            this._tail.next = null;
+        } else {
+            while(i++ < index) {
+                node = node.next;
+            }
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+        this.length--;
+        return this;
+        
     }
 
     reverse() {
         //should reverse the list
+        var count = 0;
+        var len = this.length-1;
+        var head = this._head;
+        var tail = this._tail;
+        while(count < len) {
+            var reverse = tail.data;
+            tail.data = head.data;
+            head.data = reverse;
+            tail = tail.prev;
+            head = head.next;
+            count ++;
+            len--;
+        }
+        return this;
     }
 
     indexOf(data) {
         //should return index of element if data is found
-        var index = 0,
-            resultIndex = -1;
-        var node;
-        if (Node.data === data) {
-            resultIndex = index;
-            index += 1;
+        var ind = 0;            
+        var current = this._head;
+        while (ind < this.length) {
+            if (current.data == data){return ind;}
+            current = current.next;            
+            ind += 1;
         }
-        return resultIndex;
+        return -1;
     }
 }
 
